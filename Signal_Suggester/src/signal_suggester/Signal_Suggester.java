@@ -1,20 +1,85 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/Classes/Main.java to edit this template
- */
+
 package signal_suggester;
 
-/**
- *
- * @author Neeraj
- */
-public class Signal_Suggester {
+import javax.swing.JFrame;
+import javax.swing.JButton;
+import javax.swing.JLabel;
+import java.awt.Font;
+import java.awt.event.ActionListener;
+import java.awt.event.ActionEvent;
 
-    /**
-     * @param args the command line arguments
-     */
+public class Signal_Suggester implements ActionListener{
+
+    JFrame frame = new JFrame();
+    JLabel welcome, select_market;
+    JButton indian_stock, us_stock, crypto_spot, currencies;
+    Signal_Suggester()
+    {
+        welcome = new JLabel("Welcome to Signal Suggester based on SMA/EMA crossover");
+        select_market = new JLabel("Select Market:");
+        welcome.setFont(new Font("Ariel", Font.BOLD, 26));
+        welcome.setBounds(0, 10, 890, 50);
+        welcome.setHorizontalAlignment(JLabel.CENTER);
+        select_market.setFont(new Font("Ariel", Font.BOLD, 24));
+        select_market.setBounds(0, 100, 890, 50);
+        select_market.setHorizontalAlignment(JLabel.CENTER);
+        
+        indian_stock = new JButton("Indian Stocks");
+        us_stock = new JButton("US Stocks");
+        crypto_spot = new JButton("Cryptocurrencies");
+        currencies = new JButton("Currencies");
+        indian_stock.setFont(new Font("Ariel", Font.BOLD, 16));
+        us_stock.setFont(new Font("Ariel", Font.BOLD, 16));
+        crypto_spot.setFont(new Font("Ariel", Font.BOLD, 16));
+        currencies.setFont(new Font("Ariel", Font.BOLD, 16));
+        
+        indian_stock.addActionListener(this);
+        us_stock.addActionListener(this);
+        crypto_spot.addActionListener(this);
+        currencies.addActionListener(this);
+        
+        indian_stock.setBounds(340, 200, 200, 25);
+        us_stock.setBounds(340, 250, 200, 25);
+        crypto_spot.setBounds(340, 300, 200, 25);
+        currencies.setBounds(340, 350, 200, 25);
+        
+        frame.add(welcome);
+        frame.add(select_market);
+        frame.add(indian_stock);
+        frame.add(us_stock);
+        frame.add(crypto_spot);
+        frame.add(currencies);
+        frame.setTitle("Signal Suggester");
+        frame.setSize(900, 500);
+        frame.setResizable(false);
+        frame.setLayout(null);
+        frame.setLocationRelativeTo(null);
+        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        frame.setVisible(true);
+    }
+    
+    @Override
+    public void actionPerformed(ActionEvent e){
+        if(e.getSource() == indian_stock)
+        {
+            
+        }
+        else if(e.getSource() == us_stock)
+        {
+            
+        }
+        else if(e.getSource() == crypto_spot)
+        {
+            
+        }
+        else if(e.getSource() == currencies)
+        {
+        
+        }
+    }
+    
     public static void main(String[] args) {
-        // TODO code application logic here
+        new Signal_Suggester();
     }
     
 }
