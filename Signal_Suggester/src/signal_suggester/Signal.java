@@ -31,7 +31,10 @@ public class Signal {
         long period_from = period_to - (86400 * TimeDuration);
         System.out.println("from: " + period_from);
         String command[] = {"curl" , "\"https://query1.finance.yahoo.com/v7/finance/download/" + Ticker + "?period1=" + period_from + "&period2=" + period_to + "&interval=1d\""};
+//        String file_name = Ticker + ".csv";
+//        String command_save[] = {"curl" , "\"https://query1.finance.yahoo.com/v7/finance/download/" + Ticker + "?period1=" + period_from + "&period2=" + period_to + "&interval=1d\"", "-o", file_name};
         Process p = Runtime.getRuntime().exec(command);
+//        Process p_save = Runtime.getRuntime().exec(command_save);
         BufferedReader reader = new BufferedReader(new InputStreamReader(p.getInputStream()));
         while((line = reader.readLine()) != null)
         {
