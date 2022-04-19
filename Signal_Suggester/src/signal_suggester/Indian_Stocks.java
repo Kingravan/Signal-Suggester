@@ -7,7 +7,6 @@ import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JSpinner;
@@ -23,142 +22,27 @@ import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.awt.Font;
-import java.awt.HeadlessException;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import javax.swing.event.MenuListener;
+import javax.swing.event.MenuEvent;
 
-class Live implements Runnable{
-    String[] Ticker = null;
-    int FirstMA = 0;
-    int SecondMA = 0;
-    int TimeFrame = 0;
-    String Interval = null;
-    String SMA_EMA = null;
-    DefaultTableModel tableModel = null;
-    Live(String[] Ticker, int FirstMA, int SecondMA, int TimeFrame, String Interval, String SMA_EMA, DefaultTableModel tableModel)
-    {
-        this.Ticker = Ticker;
-        this.FirstMA = FirstMA;
-        this.SecondMA = SecondMA;
-        this.TimeFrame = TimeFrame;
-        this.Interval = Interval;
-        this.SMA_EMA = SMA_EMA;
-        this.tableModel = tableModel;
-    }
-    @Override
-    public void run()
-    {
-        Signal obj = new Signal();
-        if(SMA_EMA.equals("Both"))
-        {
-            for(String s : Ticker)
-            {
-                try
-                {
-                    obj.fetch_data(s.concat(".NS"), TimeFrame, Interval);
-                    obj.sma_calculate(FirstMA, SecondMA);
-                    obj.ema_calculate(FirstMA, SecondMA);
-                    obj.SMA_Signal_Find();
-                    obj.EMA_Signal_Find();
-                    obj.Final_Signal_Find();
-                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
-                }
-                catch(Exception e1)
-                {
-                    obj.Clear_Previous();
-                    try
-                    {
-                        obj.fetch_data(s.concat(".BO"), TimeFrame, Interval);
-                        obj.sma_calculate(FirstMA, SecondMA);
-                        obj.ema_calculate(FirstMA, SecondMA);
-                        obj.SMA_Signal_Find();
-                        obj.EMA_Signal_Find();
-                        obj.Final_Signal_Find();
-                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
-                    }
-                    catch(Exception e2)
-                    {
-                        obj.Clear_Previous();
-                    }
-                }
-            }
-        }
-        else if(SMA_EMA.equals("SMA"))
-        {
-            for(String s : Ticker)
-            {
-                try
-                {
-                    obj.fetch_data(s.concat(".NS"), TimeFrame, Interval);
-                    obj.sma_calculate(FirstMA, SecondMA);
-                    obj.SMA_Signal_Find();
-                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
-                }
-                catch(Exception e1)
-                {
-                    obj.Clear_Previous();
-                    try
-                    {
-                        obj.fetch_data(s.concat(".BO"), TimeFrame, Interval);
-                        obj.sma_calculate(FirstMA, SecondMA);
-                        obj.SMA_Signal_Find();
-                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
-                    }
-                    catch(Exception e2)
-                    {
-                        obj.Clear_Previous();
-                    }
-                }
-            }
-        }
-        else
-        {
-            for(String s : Ticker)
-            {
-                try
-                {
-                    obj.fetch_data(s.concat(".NS"), TimeFrame, Interval);
-                    obj.sma_calculate(FirstMA, SecondMA);
-                    obj.SMA_Signal_Find();
-                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
-                }
-                catch(Exception e1)
-                {
-                    obj.Clear_Previous();
-                    try
-                    {
-                        obj.fetch_data(s.concat(".BO"), TimeFrame, Interval);
-                        obj.sma_calculate(FirstMA, SecondMA);
-                        obj.SMA_Signal_Find();
-                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
-                    }
-                    catch(Exception e2)
-                    {
-                        obj.Clear_Previous();
-                    }
-                }
-            }            
-        }
-    }
-}
-public class Indian_Stocks implements ActionListener{
+public class Indian_Stocks implements ActionListener, MenuListener{
     Connection con= null;
     Statement stmt = null;
     
-    String currentOption = "Ticker";
     JFrame frame = new JFrame();
     JMenuBar menubar;
-    JMenu historical, live;
-    JMenuItem historicalByTicker, historicalByIndex, liveByTicker, liveByIndex;
+    JMenu byTicker, byIndex;
     JLabel intro, enterTicker, selectIndex, hint, optional, basedOn, timeFrame, maPeriod, interval;
     JTextField inputTicker;
     JCheckBox sma, ema;
     JSpinner firstMA, secondMA;
     SpinnerNumberModel fmavalues, smavalues;
     JComboBox time_Frame, Interval;
-    JButton historicalShow, liveShow;
+    JButton showTicker, showIndex, reset;
     JTable resultContainer;
     DefaultTableModel tableModel;
     JScrollPane scrollResult;
@@ -228,12 +112,15 @@ public class Indian_Stocks implements ActionListener{
         sma.setSelected(true);
         ema.setSelected(true);
         
-        historicalShow = new JButton("Show");
-        liveShow = new JButton("Show");
-        historicalShow.setFont(new Font("Ariel", Font.BOLD, 18));
-        liveShow.setFont(new Font("Ariel", Font.BOLD, 18));
-        historicalShow.setBounds(300, 300, 100, 30);
-        liveShow.setBounds(300, 300, 100, 30);
+        showTicker = new JButton("Show");
+        showIndex = new JButton("Show");
+        reset = new JButton("Reset");
+        showTicker.setFont(new Font("Ariel", Font.BOLD, 18));
+        showIndex.setFont(new Font("Ariel", Font.BOLD, 18));
+        reset.setFont(new Font("Ariel", Font.BOLD, 18));
+        showTicker.setBounds(300, 300, 100, 30);
+        showIndex.setBounds(300, 300, 100, 30);
+        reset.setBounds(450, 300, 100, 30);
         
         tableModel = new DefaultTableModel();
         tableModel.addColumn("Date");
@@ -250,28 +137,19 @@ public class Indian_Stocks implements ActionListener{
         resultContainer.setDefaultEditor(Object.class, null);
         scrollResult.setBounds(10, 350, 770, 280);
         
-        historicalShow.addActionListener(this);
-        liveShow.addActionListener(this);
+        showTicker.addActionListener(this);
+        showIndex.addActionListener(this);
+        reset.addActionListener(this);
         
         selectIndex.setVisible(false);
-        liveShow.setVisible(false);
+        showIndex.setVisible(false);
         
         menubar = new JMenuBar();
-        historical = new JMenu("Historical");
-        live = new JMenu("Live");
-        historicalByTicker = new JMenuItem("By Ticker");
-        liveByTicker= new JMenuItem("By Ticker");
-        historicalByIndex = new JMenuItem("By Index");
-        liveByIndex = new JMenuItem("By Index");
-        historical.add(historicalByTicker);
-        live.add(liveByTicker);
-        historical.add(historicalByIndex);
-        live.add(liveByIndex);
-        
-        historicalByTicker.addActionListener(this);
-        liveByTicker.addActionListener(this);
-        historicalByIndex.addActionListener(this);
-        liveByIndex.addActionListener(this);
+        byTicker = new JMenu("By Ticker");
+        byIndex = new JMenu("By Index");
+
+        byTicker.addMenuListener(this);
+        byIndex.addMenuListener(this);
         sma.addActionListener(this);
         ema.addActionListener(this);
         
@@ -281,8 +159,8 @@ public class Indian_Stocks implements ActionListener{
             stmt = con.createStatement();
         }
         catch(SQLException e){}
-        menubar.add(historical);
-        menubar.add(live);
+        menubar.add(byTicker);
+        menubar.add(byIndex);
         frame.setJMenuBar(menubar);
         frame.add(intro);
         frame.add(enterTicker);
@@ -300,8 +178,9 @@ public class Indian_Stocks implements ActionListener{
         frame.add(time_Frame);
         frame.add(interval);
         frame.add(Interval);
-        frame.add(historicalShow);
-        frame.add(liveShow);
+        frame.add(showTicker);
+        frame.add(showIndex);
+        frame.add(reset);
         frame.add(scrollResult);
         frame.setSize(800,700);
         frame.setTitle("Signal Suggester - Indian Stocks");
@@ -328,103 +207,284 @@ public class Indian_Stocks implements ActionListener{
         frame.setVisible(true);
     }
     
+    public void singleTicker(String Ticker, int FirstMA, int SecondMA, int FinalTimeFrame, String finalInterval){
+        Signal obj = new Signal();
+        if(sma.isSelected() && ema.isSelected())
+        {
+            try
+            {
+                obj.fetch_data(Ticker.concat(".NS"), FinalTimeFrame, finalInterval);
+                obj.sma_calculate(FirstMA, SecondMA);
+                obj.ema_calculate(FirstMA, SecondMA);
+                obj.SMA_Signal_Find();
+                obj.EMA_Signal_Find();
+                obj.Final_Signal_Find();
+                tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
+            }
+            catch(Exception e1)
+            {
+                obj.Clear_Previous();
+                try
+                {
+                    obj.fetch_data(Ticker.concat(".BO"), FinalTimeFrame, finalInterval);
+                    obj.sma_calculate(FirstMA, SecondMA);
+                    obj.ema_calculate(FirstMA, SecondMA);
+                    obj.SMA_Signal_Find();
+                    obj.EMA_Signal_Find();
+                    obj.Final_Signal_Find();
+                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
+                }
+                catch(Exception e2)
+                {
+                    JOptionPane.showMessageDialog(null, "Enter Valid Ticker");
+                }
+            }
+            finally
+            {
+                obj.Clear_Previous();
+            }
+        }
+        else if(sma.isSelected())
+        {
+            try
+            {
+                obj.fetch_data(Ticker.concat(".NS"), FinalTimeFrame, finalInterval);
+                obj.sma_calculate(FirstMA, SecondMA);
+                obj.SMA_Signal_Find();
+                tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
+            }
+            catch(Exception e1)
+            {
+                obj.Clear_Previous();
+                try
+                {
+                    obj.fetch_data(Ticker.concat(".BO"), FinalTimeFrame, finalInterval);
+                    obj.sma_calculate(FirstMA, SecondMA);
+                    obj.SMA_Signal_Find();
+                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
+                }
+                catch(Exception e2)
+                {
+                    JOptionPane.showMessageDialog(null, "Enter valid Ticker");
+                }
+            }
+            finally
+            {
+                obj.Clear_Previous();
+            }
+        }
+        else if(ema.isSelected())
+        {
+            try
+            {
+                obj.fetch_data(Ticker.concat(".NS"), FinalTimeFrame, finalInterval);
+                obj.ema_calculate(FirstMA, SecondMA);
+                obj.EMA_Signal_Find();
+                tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
+            }
+            catch(Exception e1)
+            {
+                obj.Clear_Previous();
+                try
+                {
+                    obj.fetch_data(Ticker.concat(".BO"), FinalTimeFrame, finalInterval);
+                    obj.ema_calculate(FirstMA, SecondMA);
+                    obj.EMA_Signal_Find();
+                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
+                }
+                catch(Exception e2)
+                {
+                    JOptionPane.showMessageDialog(null, "Enter valid Ticker");
+                }
+            }
+            finally
+            {
+                obj.Clear_Previous();
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null, "Select atleast one from SMA and EMA");
+        }
+    }
+    
+    public void multipleTicker(String[] List, int FirstMA, int SecondMA, int FinalTimeFrame, String finalInterval){
+        Signal obj = new Signal();
+        if(sma.isSelected() && ema.isSelected())
+        {
+            for(String s : List)
+            {
+                try
+                {
+                    obj.fetch_data(s.concat(".NS"), FinalTimeFrame, finalInterval);
+                    obj.sma_calculate(FirstMA, SecondMA);
+                    obj.ema_calculate(FirstMA, SecondMA);
+                    obj.SMA_Signal_Find();
+                    obj.EMA_Signal_Find();
+                    obj.Final_Signal_Find();
+                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
+                }
+                catch(Exception e1)
+                {
+                    obj.Clear_Previous();
+                    try
+                    {
+                        obj.fetch_data(s.concat(".BO"), FinalTimeFrame, finalInterval);
+                        obj.sma_calculate(FirstMA, SecondMA);
+                        obj.ema_calculate(FirstMA, SecondMA);
+                        obj.SMA_Signal_Find();
+                        obj.EMA_Signal_Find();
+                        obj.Final_Signal_Find();
+                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
+                    }
+                    catch(Exception e2)
+                    {
+                        JOptionPane.showMessageDialog(null, "Enter Valid Ticker");
+                    }
+                }
+                finally
+                {
+                    obj.Clear_Previous();
+                }
+            }
+        }
+        else if(sma.isSelected())
+        {
+            for(String s : List)
+            {
+                try
+                {
+                    obj.fetch_data(s.concat(".NS"), FinalTimeFrame, finalInterval);
+                    obj.sma_calculate(FirstMA, SecondMA);
+                    obj.SMA_Signal_Find();
+                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
+                }
+                catch(Exception e1)
+                {
+                    obj.Clear_Previous();
+                    try
+                    {
+                        obj.fetch_data(s.concat(".BO"), FinalTimeFrame, finalInterval);
+                        obj.sma_calculate(FirstMA, SecondMA);
+                        obj.SMA_Signal_Find();
+                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
+                    }
+                    catch(Exception e2)
+                    {
+                        JOptionPane.showMessageDialog(null, "Enter valid Ticker");
+                    }
+                }
+                finally
+                {
+                    obj.Clear_Previous();
+                }
+            }
+        }
+        else if(ema.isSelected())
+        {
+            for(String s : List)
+            {
+                try
+                {
+                    obj.fetch_data(s.concat(".NS"), FinalTimeFrame, finalInterval);
+                    obj.ema_calculate(FirstMA, SecondMA);
+                    obj.EMA_Signal_Find();
+                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
+                }
+                catch(Exception e1)
+                {
+                    obj.Clear_Previous();
+                    try
+                    {
+                        obj.fetch_data(s.concat(".BO"), FinalTimeFrame, finalInterval);
+                        obj.ema_calculate(FirstMA, SecondMA);
+                        obj.EMA_Signal_Find();
+                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, Math.round(obj.close_price.get(obj.close_price.size() - 1) * 100) / 100.0, null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
+                    }
+                    catch(Exception e2)
+                    {
+                        JOptionPane.showMessageDialog(null, "Enter valid Ticker");
+                    }
+                }
+                finally
+                {
+                    obj.Clear_Previous();
+                }
+            }
+        }
+        else
+        {
+            JOptionPane.showMessageDialog(null, "Select atleast one from SMA and EMA");
+        }
+    }
+    @Override
+    public void menuSelected(MenuEvent me)
+    {
+        if(me.getSource() == byTicker)
+        {
+            intro.setText("Suggest By Ticker");
+            inputTicker.setText("");
+            tableModel.setRowCount(0);
+            enterTicker.setVisible(true);
+            selectIndex.setVisible(false);
+            hint.setVisible(true);
+            inputTicker.setVisible(true);
+            showTicker.setVisible(true);
+            showIndex.setVisible(false);
+        }
+        else if(me.getSource() == byIndex)
+        {
+            intro.setText("Suggest By Index");
+            tableModel.setRowCount(0);
+            enterTicker.setVisible(false);
+            selectIndex.setVisible(true);
+            hint.setVisible(false);
+            inputTicker.setVisible(false);
+            showTicker.setVisible(false);
+            showIndex.setVisible(true);
+        }
+    }
+    @Override
+    public void menuCanceled(MenuEvent me1){}
+    @Override
+    public void menuDeselected(MenuEvent me2){}
     @Override
     public void actionPerformed(ActionEvent e){
-        if(e.getSource() == historicalByTicker)
-        {
-            intro.setText("Suggest By Ticker");
-            currentOption = "Ticker";
-            enterTicker.setVisible(true);
-            selectIndex.setVisible(false);
-            hint.setVisible(true);
-            inputTicker.setVisible(true);
-            historicalShow.setVisible(true);
-            liveShow.setVisible(false);
-        }
-        else if(e.getSource() == historicalByIndex)
-        {
-            intro.setText("Suggest By Index");
-            currentOption = "Index";
-            enterTicker.setVisible(false);
-            selectIndex.setVisible(true);
-            hint.setVisible(false);
-            inputTicker.setVisible(false);
-            historicalShow.setVisible(true);
-            liveShow.setVisible(false);
-        }
-        else if(e.getSource() == liveByTicker)
-        {
-            intro.setText("Suggest By Ticker");
-            currentOption = "Ticker";
-            enterTicker.setVisible(true);
-            selectIndex.setVisible(false);
-            hint.setVisible(true);
-            inputTicker.setVisible(true);
-            historicalShow.setVisible(false);
-            liveShow.setVisible(true);
-        }
-        else if(e.getSource() == liveByIndex)
-        {
-            intro.setText("Suggest By Index");
-            currentOption = "Index";
-            enterTicker.setVisible(false);
-            selectIndex.setVisible(true);
-            hint.setVisible(false);
-            inputTicker.setVisible(false);
-            historicalShow.setVisible(false);
-            liveShow.setVisible(true);
-        }
-        else if(e.getSource() == historicalShow)
-        {
-            if(currentOption.equals("Ticker"))
+        if(e.getSource() == showTicker)
+        { 
+            tableModel.setRowCount(0);
+            String Ticker = inputTicker.getText().trim().toUpperCase();
+            int FirstMA = (Integer) firstMA.getValue();
+            int SecondMA = (Integer) secondMA.getValue();
+            int TimeFrame = time_Frame.getSelectedIndex();
+            int FinalTimeFrame = 0;
+            switch(TimeFrame)
             {
-                String Ticker = inputTicker.getText().trim().toUpperCase();
-                String isSMA = null;
-                String isEMA = null;
-                if(sma.isSelected())
-                {
-                    isSMA = "Yes";
-                }
-                if(ema.isSelected())
-                {
-                    isEMA = "Yes";
-                }
-                if(isSMA == null && isEMA == null)
-                {
-                    JOptionPane.showMessageDialog(null, "Select atleast one from SMA or EMA");
-                }
-                int FirstMA = (Integer) firstMA.getValue();
-                int SecondMA = (Integer) secondMA.getValue();
-                int TimeFrame = time_Frame.getSelectedIndex();
-                int FinalTimeFrame = 0;
-                switch(TimeFrame)
-                {
-                    case 0: FinalTimeFrame = 30; break;
-                    case 1: FinalTimeFrame = (30 * 3); break;
-                    case 2: FinalTimeFrame = (30 * 6); break;
-                    case 3: FinalTimeFrame = 365; break;
-                    case 4: FinalTimeFrame = (365 * 2); break;
-                    case 5: FinalTimeFrame = (365 * 3); break;
-                    case 6: FinalTimeFrame = (365 * 5); break;
-                }
-                int tempInterval = Interval.getSelectedIndex();
-                String finalInterval = null;
-                switch(tempInterval)
-                {
-                    case 0: finalInterval = "1m"; break;
-                    case 1: finalInterval = "5m"; break;
-                    case 2: finalInterval = "15m"; break;
-                    case 3: finalInterval = "30m"; break;
-                    case 4: finalInterval = "1h"; break;
-                    case 5: finalInterval = "90m"; break;
-                    case 6: finalInterval = "1d"; break;
-                    case 7: finalInterval = "5d"; break;
-                    case 8: finalInterval = "1wk"; break;
-                    case 9: finalInterval = "1mo"; break;
-                    case 10: finalInterval = "3mo"; break;
-                }
-                Signal obj = new Signal();
-                String[] List = null;
+                case 0 -> FinalTimeFrame = 30;
+                case 1 -> FinalTimeFrame = (30 * 3);
+                case 2 -> FinalTimeFrame = (30 * 6);
+                case 3 -> FinalTimeFrame = 365;
+                case 4 -> FinalTimeFrame = (365 * 2);
+                case 5 -> FinalTimeFrame = (365 * 3);
+                case 6 -> FinalTimeFrame = (365 * 5);
+            }
+            int tempInterval = Interval.getSelectedIndex();
+            String finalInterval = null;
+            switch(tempInterval)
+            {
+                case 0 -> finalInterval = "1m";
+                case 1 -> finalInterval = "5m";
+                case 2 -> finalInterval = "15m";
+                case 3 -> finalInterval = "30m";
+                case 4 -> finalInterval = "1h";
+                case 5 -> finalInterval = "90m";
+                case 6 -> finalInterval = "1d";
+                case 7 -> finalInterval = "5d";
+                case 8 -> finalInterval = "1wk";
+                case 9 -> finalInterval = "1mo";
+                case 10 -> finalInterval = "3mo";
+            }
+                String[] List;
                 if(Ticker.contains(","))
                 {
                     List = Ticker.split(",");
@@ -432,262 +492,21 @@ public class Indian_Stocks implements ActionListener{
                     {
                         List[i] = List[i].trim().toUpperCase();
                     }
+                    multipleTicker(List, FirstMA, SecondMA, FinalTimeFrame, finalInterval);
                 }
-                if(sma.isSelected() && ema.isSelected())
+                else
                 {
-                    try
-                    {
-                        if(Ticker.contains(","))
-                        {
-                            for(String s : List)
-                            {
-                                try
-                                {
-                                    obj.fetch_data(s.concat(".NS"), FinalTimeFrame, finalInterval);
-                                    obj.sma_calculate(FirstMA, SecondMA);
-                                    obj.ema_calculate(FirstMA, SecondMA);
-                                    obj.SMA_Signal_Find();
-                                    obj.EMA_Signal_Find();
-                                    obj.Final_Signal_Find();
-                                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
-                                }
-                                catch(Exception e1)
-                                { 
-                                    obj.Clear_Previous();
-                                    try
-                                    {
-                                        obj.fetch_data(s.concat(".BO"), FinalTimeFrame, finalInterval);
-                                        obj.sma_calculate(FirstMA, SecondMA);
-                                        obj.ema_calculate(FirstMA, SecondMA);
-                                        obj.SMA_Signal_Find();
-                                        obj.EMA_Signal_Find();
-                                        obj.Final_Signal_Find();
-                                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, s, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
-                                    }
-                                    catch(Exception e2)
-                                    {
-                                        obj.Clear_Previous();
-                                        JOptionPane.showMessageDialog(null, "Enter Valid Ticker");
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                obj.fetch_data(Ticker.concat(".NS"), FinalTimeFrame, finalInterval);
-                                obj.sma_calculate(FirstMA, SecondMA);
-                                obj.ema_calculate(FirstMA, SecondMA);
-                                obj.SMA_Signal_Find();
-                                obj.EMA_Signal_Find();
-                                obj.Final_Signal_Find();
-                                System.out.println(Ticker + "\n" + obj.close_price.get(obj.close_price.size() - 1) + "\n" + obj.SMA_Signal.get(obj.SMA_Signal.size() - 1) + "\n" + obj.EMA_Signal.get(obj.EMA_Signal.size() - 1) + "\n" + obj.Final_Signal);
-                                tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
-                            }
-                            catch(Exception e1)
-                            {
-                                obj.Clear_Previous();
-                                try
-                                {
-                                    obj.fetch_data(Ticker.concat(".BO"), FinalTimeFrame, finalInterval);
-                                    obj.sma_calculate(FirstMA, SecondMA);
-                                    obj.ema_calculate(FirstMA, SecondMA);
-                                    obj.SMA_Signal_Find();
-                                    obj.EMA_Signal_Find();
-                                    obj.Final_Signal_Find();
-                                    System.out.println(Ticker + "\n" + obj.close_price.get(obj.close_price.size() - 1) + "\n" + obj.SMA_Signal.get(obj.SMA_Signal.size() - 1) + "\n" + obj.EMA_Signal.get(obj.EMA_Signal.size() - 1) + "\n" + obj.Final_Signal);
-                                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.Final_Signal});
-                                }
-                                catch(Exception e2)
-                                {
-                                    JOptionPane.showMessageDialog(null, "Enter Valid Ticker");
-                                }
-                            }
-                        }
-                    }
-                    catch(HeadlessException e1)
-                    {
-                        JOptionPane.showMessageDialog(null, "Something went wrong");
-                    }
-                    finally
-                    {
-                        obj.Clear_Previous();
-                        inputTicker.setText("");
-                        firstMA.setValue(20);
-                        secondMA.setValue(50);
-                        sma.setSelected(true);
-                        ema.setSelected(true);
-                        time_Frame.setSelectedIndex(4);
-                        Interval.setSelectedIndex(6);
-                    }
+                    singleTicker(Ticker, FirstMA, SecondMA, FinalTimeFrame, finalInterval);
                 }
-                else if(sma.isSelected())
-                {
-                    try
-                    {
-                        if(Ticker.contains(","))
-                        {
-                            for(String s : List)
-                            {
-                                try
-                                {
-                                    obj.fetch_data(s.concat(".NS"), FinalTimeFrame, finalInterval);
-                                    obj.sma_calculate(FirstMA, SecondMA);
-                                    obj.SMA_Signal_Find();
-                                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
-                                }
-                                catch(Exception e1)
-                                {
-                                    obj.Clear_Previous();
-                                    try
-                                    {
-                                        obj.fetch_data(s.concat(".BO"), FinalTimeFrame, finalInterval);
-                                        obj.sma_calculate(FirstMA, SecondMA);
-                                        obj.SMA_Signal_Find();
-                                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
-                                    }
-                                    catch(Exception e2)
-                                    {
-                                        JOptionPane.showMessageDialog(null, "Enter valid Ticker");
-                                    }
-                                }
-                            }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                obj.fetch_data(Ticker.concat(".NS"), FinalTimeFrame, finalInterval);
-                                obj.sma_calculate(FirstMA, SecondMA);
-                                obj.SMA_Signal_Find();
-                                tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
-                            }
-                            catch(Exception e1)
-                            {
-                                obj.Clear_Previous();
-                                try
-                                {
-                                    obj.fetch_data(Ticker.concat(".BO"), FinalTimeFrame, finalInterval);
-                                    obj.sma_calculate(FirstMA, SecondMA);
-                                    obj.SMA_Signal_Find();
-                                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), obj.SMA_Signal.get(obj.SMA_Signal.size() - 1), null, obj.SMA_Signal.get(obj.SMA_Signal.size() - 1)});
-                                }
-                                catch(Exception e2)
-                                {
-                                    JOptionPane.showMessageDialog(null, "Enter valid Ticker");
-                                }
-                            }
-                        }
-                    }
-                    catch(HeadlessException e1)
-                    {
-                        JOptionPane.showMessageDialog(null, "Something went wrong");
-                    }
-                    finally
-                    {
-                        obj.Clear_Previous();
-                        inputTicker.setText("");
-                        firstMA.setValue(20);
-                        secondMA.setValue(50);
-                        sma.setSelected(true);
-                        ema.setSelected(true);
-                        time_Frame.setSelectedIndex(4);
-                        Interval.setSelectedIndex(6);
-                    }
-                }
-                else if(ema.isSelected())
-                {
-                    try
-                    {
-                        if(Ticker.contains(","))
-                        {
-                            for(String s : List)
-                            {
-                                try
-                                {
-                                    obj.fetch_data(s.concat(".NS"), FinalTimeFrame, finalInterval);
-                                    obj.ema_calculate(FirstMA, SecondMA);
-                                    obj.EMA_Signal_Find();  
-                                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
-                                }
-                                catch(Exception e1)
-                                {
-                                    obj.Clear_Previous();
-                                    try
-                                    {
-                                        obj.fetch_data(s.concat(".BO"), FinalTimeFrame, finalInterval);
-                                        obj.ema_calculate(FirstMA, SecondMA);
-                                        obj.EMA_Signal_Find();
-                                        tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
-                                    }
-                                    catch(Exception e2)
-                                    {
-                                        JOptionPane.showMessageDialog(null, "Enter valid Ticker");
-                                    }
-
-                                }
-                            }
-                        }
-                        else
-                        {
-                            try
-                            {
-                                obj.fetch_data(Ticker.concat(".NS"), FinalTimeFrame, finalInterval);
-                                obj.ema_calculate(FirstMA, SecondMA);
-                                obj.EMA_Signal_Find();
-                                tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
-                            }
-                            catch(Exception e1)
-                            {
-                                obj.Clear_Previous();
-                                try
-                                {
-                                    obj.fetch_data(Ticker.concat(".BO"), FinalTimeFrame, finalInterval);
-                                    obj.ema_calculate(FirstMA, SecondMA);
-                                    obj.EMA_Signal_Find();
-                                    tableModel.insertRow(tableModel.getRowCount(), new Object[] {obj.Date, Ticker, obj.close_price.get(obj.close_price.size() - 1), null, obj.EMA_Signal.get(obj.EMA_Signal.size() - 1), obj.EMA_Signal.get(obj.EMA_Signal.size() - 1)});
-                                }
-                                catch(Exception e2)
-                                {
-                                    JOptionPane.showMessageDialog(null, "Enter valid Ticker");
-                                }
-                            }                            
-                        }
-                    }
-                    catch(HeadlessException e1)
-                    {
-                        JOptionPane.showMessageDialog(null, "Something went wrong");
-                    }
-                    finally
-                    {
-                        obj.Clear_Previous();
-                        inputTicker.setText("");
-                        firstMA.setValue(20);
-                        secondMA.setValue(50);
-                        sma.setSelected(true);
-                        ema.setSelected(true);
-                        time_Frame.setSelectedIndex(4);
-                        Interval.setSelectedIndex(6);
-                    }
-                }
-                
-            }
-            else
-            {
-                
-            }
         }
-        else if(e.getSource() == liveShow)
+        else if(e.getSource() == showIndex)
         {
-            if(currentOption.equals("Ticker"))
-            {
-                
-            }
-            else
-            {
-                
-            }
+            
+        }
+        else if(e.getSource() == reset)
+        {
+            inputTicker.setText("");
+            tableModel.setRowCount(0);
         }
     }
     
