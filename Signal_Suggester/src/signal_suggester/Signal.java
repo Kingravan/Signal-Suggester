@@ -22,7 +22,7 @@ public class Signal {
         return period;
     }
     
-    private void fetch_data(String Ticker, int TimeDuration, String Interval) throws Exception{
+    public void fetch_data(String Ticker, int TimeDuration, String Interval) throws Exception{
         
         String line;
         int ignore_first_line = 0;
@@ -55,7 +55,7 @@ public class Signal {
         }
     }
     
-    private void sma_calculate(int Duration_1, int Duration_2){
+    public void sma_calculate(int Duration_1, int Duration_2){
         
         Double sum = 0.0; 
         int count = 0;
@@ -96,7 +96,7 @@ public class Signal {
         }
     }
     
-    private void ema_calculate(int Duration_1, int Duration_2){
+    public void ema_calculate(int Duration_1, int Duration_2){
         
         // Duration_1 ema example: 20day ema
         for(int i = Duration_1; i < close_price.size(); i++)
@@ -133,7 +133,7 @@ public class Signal {
         }
     }
     
-    private void SMA_Signal_Find(){
+    public void SMA_Signal_Find(){
        
         int Difference = first_sma.size() - second_sma.size();
         //Finding Buy/Sell/Neutral Signals
@@ -182,7 +182,7 @@ public class Signal {
         }
     }
     
-    private void EMA_Signal_Find(){
+    public void EMA_Signal_Find(){
         
         int Difference = first_ema.size() - second_ema.size();
         //Finding Buy/Sell/Neutral Signals
@@ -231,7 +231,7 @@ public class Signal {
         }
     }
     
-    private void Final_Signal_Find(){
+    public void Final_Signal_Find(){
         
         //Finding Decision Making Signal from MASignal and EMASignal (Whichever Signals first)
         if((SMA_Signal.get(SMA_Signal.size() - 1).equals("Buy") && EMA_Signal.get(EMA_Signal.size() - 1).equals("Buy")) || (SMA_Signal.get(SMA_Signal.size() - 1).equals("Buy") && EMA_Signal.get(EMA_Signal.size() - 1).equals("Hold Sell")) || (SMA_Signal.get(SMA_Signal.size() - 1).equals("Hold Sell") && EMA_Signal.get(EMA_Signal.size() - 1).equals("Buy")))
@@ -288,42 +288,16 @@ public class Signal {
         }
     }
     
-    public static void main(String[] args){
-        Signal obj = new Signal();
-        try
-        {
-            String Ticker = args[0];
-            int timeframe = Integer.parseInt(args[1]);
-            String interval = args[2];
-            obj.fetch_data(Ticker, timeframe, interval);
-            
-            if(args[3].equals("Both"))
-            {
-                int sma1 = Integer.parseInt(args[4]);
-                int sma2 = Integer.parseInt(args[5]);
-                int ema1 = Integer.parseInt(args[6]);
-                int ema2 = Integer.parseInt(args[7]);
-                obj.sma_calculate(sma1, sma2);
-                obj.ema_calculate(ema1, ema2);
-                obj.SMA_Signal_Find();
-                obj.EMA_Signal_Find();
-                obj.Final_Signal_Find();
-            }
-            else if(args[3].equals("SMA"))
-            {
-                int sma1 = Integer.parseInt(args[4]);
-                int sma2 = Integer.parseInt(args[5]);
-                obj.sma_calculate(sma1, sma2);
-                obj.SMA_Signal_Find();
-            }
-            else if(args[3].equals("EMA"))
-            {
-                int ema1 = Integer.parseInt(args[4]);
-                int ema2 = Integer.parseInt(args[5]);
-                obj.ema_calculate(ema1, ema2);
-                obj.EMA_Signal_Find();
-            }
-        }
-        catch(Exception e){}
+    public void Clear_Previous()
+    {
+        close_price.removeAll(close_price);
+        first_sma.removeAll(first_sma);
+        second_sma.removeAll(second_sma);
+        first_ema.removeAll(first_ema);
+        second_ema.removeAll(second_ema);
+        SMA_Signal.removeAll(SMA_Signal);
+        EMA_Signal.removeAll(EMA_Signal);
+        Date = null;
+        Final_Signal = null;
     }
 }
