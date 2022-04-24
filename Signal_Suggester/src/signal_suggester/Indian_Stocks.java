@@ -21,11 +21,15 @@ import java.sql.DriverManager;
 import java.sql.Statement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.awt.Desktop;
+import java.net.URI;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import javax.swing.event.MenuListener;
 import javax.swing.event.MenuEvent;
 
@@ -36,7 +40,7 @@ public class Indian_Stocks implements ActionListener, MenuListener{
     JFrame frame = new JFrame();
     String[] indices_values = {"NIFTY_50", "NIFTY_NEXT_50", "NIFTY_100", "NIFTY_MIDCAP_50", "NIFTY_MIDCAP_100", "NIFTY_SMALLCAP_100", "NIFTY_SMALLCAP_50", "NIFTY_SMALLCAP_250", "NIFTY_BANK", "NIFTY_AUTO", "NIFTY_FINANCIAL_SERVICES", "NIFTY_FMCG", "NIFTY_IT", "NIFTY_MEDIA", "NIFTY_METAL", "NIFTY_PHARMA", "NIFTY_PSU_BANK", "NIFTY_PRIVATE_BANK", "NIFTY_REALTY", "NIFTY_CONSUMER_DURABLES", "NIFTY_OIL_and_GAS", "NIFTY_COMMODITIES", "NIFTY_ENERGY", "NIFTY_INFRASTRUCTURE", "NIFTY_MNC"};
     JMenuBar menubar;
-    JMenu byTicker, byIndex;
+    JMenu byTicker, byIndex, expertSuggestions;
     JLabel intro, enterTicker, selectIndex, hint, optional, basedOn, timeFrame, maPeriod, interval;
     JTextField inputTicker;
     JCheckBox sma, ema;
@@ -152,9 +156,11 @@ public class Indian_Stocks implements ActionListener, MenuListener{
         menubar = new JMenuBar();
         byTicker = new JMenu("By Ticker");
         byIndex = new JMenu("By Index");
+        expertSuggestions = new JMenu("Expert's Suggestions");
 
         byTicker.addMenuListener(this);
         byIndex.addMenuListener(this);
+        expertSuggestions.addMenuListener(this);
         sma.addActionListener(this);
         ema.addActionListener(this);
         
@@ -166,6 +172,7 @@ public class Indian_Stocks implements ActionListener, MenuListener{
         catch(SQLException e){}
         menubar.add(byTicker);
         menubar.add(byIndex);
+        menubar.add(expertSuggestions);
         frame.setJMenuBar(menubar);
         frame.add(intro);
         frame.add(enterTicker);
@@ -432,6 +439,14 @@ public class Indian_Stocks implements ActionListener, MenuListener{
             inputTicker.setVisible(false);
             showTicker.setVisible(false);
             showIndex.setVisible(true);
+        }
+        else if(me.getSource() == expertSuggestions)
+        {
+            try
+            {
+                Desktop.getDesktop().browse(new URI("https://www.moneycontrol.com/markets/stock-advice/?classic=true"));
+            }
+            catch(IOException | URISyntaxException e){}
         }
     }
     @Override
