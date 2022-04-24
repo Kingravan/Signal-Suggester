@@ -164,6 +164,7 @@ public class US_Stocks implements ActionListener, MenuListener{
             stmt = con.createStatement();
         }
         catch(SQLException e){}
+        frame.getRootPane().setDefaultButton(showTicker);
         menubar.add(byTicker);
         menubar.add(byIndex);
         frame.setJMenuBar(menubar);
@@ -348,6 +349,7 @@ public class US_Stocks implements ActionListener, MenuListener{
             inputTicker.setVisible(true);
             showTicker.setVisible(true);
             showIndex.setVisible(false);
+            frame.getRootPane().setDefaultButton(showTicker);
         }
         else if(me.getSource() == byIndex)
         {
@@ -360,6 +362,7 @@ public class US_Stocks implements ActionListener, MenuListener{
             inputTicker.setVisible(false);
             showTicker.setVisible(false);
             showIndex.setVisible(true);
+            frame.getRootPane().setDefaultButton(showIndex);
         }
     }
     @Override
