@@ -17,7 +17,6 @@ import javax.swing.JOptionPane;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.Statement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.awt.Font;
 import java.awt.event.WindowAdapter;
@@ -145,6 +144,7 @@ public class Currencies implements ActionListener{
             stmt = con.createStatement();
         }
         catch(SQLException e){}
+        frame.getRootPane().setDefaultButton(showTicker);
         frame.add(intro);
         frame.add(enterTicker);
         frame.add(inputTicker);
