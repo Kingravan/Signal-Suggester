@@ -164,6 +164,8 @@ public class Indian_Stocks implements ActionListener, MenuListener{
         sma.addActionListener(this);
         ema.addActionListener(this);
         
+        frame.getRootPane().setDefaultButton(showTicker);
+        
         try
         {
             con = DriverManager.getConnection("jdbc:mysql://localhost:3306/signal_suggester", "root", "root");
@@ -427,6 +429,7 @@ public class Indian_Stocks implements ActionListener, MenuListener{
             inputTicker.setVisible(true);
             showTicker.setVisible(true);
             showIndex.setVisible(false);
+            frame.getRootPane().setDefaultButton(showTicker);
         }
         else if(me.getSource() == byIndex)
         {
@@ -439,6 +442,7 @@ public class Indian_Stocks implements ActionListener, MenuListener{
             inputTicker.setVisible(false);
             showTicker.setVisible(false);
             showIndex.setVisible(true);
+            frame.getRootPane().setDefaultButton(showIndex);
         }
         else if(me.getSource() == expertSuggestions)
         {
