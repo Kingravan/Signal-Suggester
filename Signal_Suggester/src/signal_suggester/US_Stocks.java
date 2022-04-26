@@ -62,7 +62,7 @@ public class US_Stocks implements ActionListener, MenuListener{
         String[] timeFrame_values = {"1month", "3month", "6month", "1year", "2year", "3year", "5year"};
         time_Frame = new JComboBox(timeFrame_values);
         interval = new JLabel("Interval: ");
-        String[] interval_values = {"1min", "5min", "15min", "30min", "1hr", "1.5hr", "1day", "5day", "1week", "1month", "3month"};
+        String[] interval_values = {"1day", "5day", "1week", "1month", "3month"};
         Interval = new JComboBox(interval_values);
         maPeriod = new JLabel("MA Period: ");
         Indices = new JComboBox(indices_values);
@@ -101,7 +101,7 @@ public class US_Stocks implements ActionListener, MenuListener{
         firstMA.setValue(20);
         secondMA.setValue(50);
         time_Frame.setSelectedIndex(4);
-        Interval.setSelectedIndex(6);
+        Interval.setSelectedIndex(0);
         
         inputTicker = new JTextField();
         inputTicker.setFont(new Font("Ariel", Font.PLAIN, 16));
@@ -393,17 +393,11 @@ public class US_Stocks implements ActionListener, MenuListener{
             String finalInterval = null;
             switch(tempInterval)
             {
-                case 0 -> finalInterval = "1m";
-                case 1 -> finalInterval = "5m";
-                case 2 -> finalInterval = "15m";
-                case 3 -> finalInterval = "30m";
-                case 4 -> finalInterval = "1h";
-                case 5 -> finalInterval = "90m";
-                case 6 -> finalInterval = "1d";
-                case 7 -> finalInterval = "5d";
-                case 8 -> finalInterval = "1wk";
-                case 9 -> finalInterval = "1mo";
-                case 10 -> finalInterval = "3mo";
+                case 0 -> finalInterval = "1d";
+                case 1 -> finalInterval = "5d";
+                case 2 -> finalInterval = "1wk";
+                case 3 -> finalInterval = "1mo";
+                case 4 -> finalInterval = "3mo";
             }
                 String[] List;
                 if(Ticker.contains(","))
@@ -443,17 +437,11 @@ public class US_Stocks implements ActionListener, MenuListener{
             String finalInterval = null;
             switch(tempInterval)
             {
-                case 0 -> finalInterval = "1m";
-                case 1 -> finalInterval = "5m";
-                case 2 -> finalInterval = "15m";
-                case 3 -> finalInterval = "30m";
-                case 4 -> finalInterval = "1h";
-                case 5 -> finalInterval = "90m";
-                case 6 -> finalInterval = "1d";
-                case 7 -> finalInterval = "5d";
-                case 8 -> finalInterval = "1wk";
-                case 9 -> finalInterval = "1mo";
-                case 10 -> finalInterval = "3mo";
+                case 0 -> finalInterval = "1d";
+                case 1 -> finalInterval = "5d";
+                case 2 -> finalInterval = "1wk";
+                case 3 -> finalInterval = "1mo";
+                case 4 -> finalInterval = "3mo";
             }
             try
             {
